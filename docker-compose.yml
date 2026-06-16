@@ -1,0 +1,104 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+
+    container_name: mysql
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: varunesh1
+      MYSQL_DATABASE: codeinsight_ai
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    networks:
+      - codeinsight-network
+
+  user-service:
+    build: ./backend/user-service
+
+    container_name: user-service
+
+    restart: always
+
+    ports:
+      - "5000:5000"
+
+    env_file:
+      - ./backend/user-service/.env
+
+    depends_on:
+      - mysql
+
+    networks:
+      - codeinsight-network
+
+  coding-service:
+    build: ./backend/coding-service
+
+    container_name: coding-service
+
+    restart: always
+
+    ports:
+      - "5001:5001"
+
+    env_file:
+      - ./backend/coding-service/.env
+
+    depends_on:
+      - mysql
+
+    networks:
+      - codeinsight-network
+
+  ai-service:
+    build: ./backend/ai-service
+
+    container_name: ai-service
+
+    restart: always
+
+    ports:
+      - "5002:5002"
+
+    env_file:
+      - ./backend/ai-service/.env
+
+    depends_on:
+      - mysql
+
+    networks:
+      - codeinsight-network
+
+  frontend:
+    build: ./frontend
+
+    container_name: frontend
+
+    restart: always
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      - user-service
+      - coding-service
+      - ai-service
+
+    networks:
+      - codeinsight-network
+
+volumes:
+  mysql_data:
+
+networks:
+  codeinsight-network:
+    driver: bridge
