@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ai-service
+  name: coding-service
   namespace: codeinsight
 
 spec:
@@ -9,12 +9,12 @@ spec:
 
   selector:
     matchLabels:
-      app: ai-service
+      app: coding-service
 
   template:
     metadata:
       labels:
-        app: ai-service
+        app: coding-service
 
     spec:
 
@@ -22,23 +22,29 @@ spec:
         - name: ecr-secret
 
       containers:
-        - name: ai-service
+        - name: coding-service
 
-          image: 888635225328.dkr.ecr.us-east-1.amazonaws.com/codeinsight-ai-service:latest
-
+          image: 888635225328.dkr.ecr.us-east-1.amazonaws.com/codeinsight-coding-service:latest
+          env:
+            - name: GROQ_API_KEY
+              valueFrom:
+              secretKeyRef:
+              name: groq-secret
+              key: GROQ_API_KEY  
           ports:
-            - containerPort: 5002
+            - containerPort: 5001
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: ai-service
+  name: coding-service
   namespace: codeinsight
 
 spec:
   selector:
-    app: ai-service
+    app: coding-service
 
   ports:
-    - port: 5002
-      targetPort: 5002
+    - port: 5001
+      targetPort: 5001
