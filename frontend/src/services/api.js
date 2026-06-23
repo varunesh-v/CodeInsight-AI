@@ -5,9 +5,9 @@ export const userAPI = axios.create({
 });
 
 export const codingAPI = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:5001",
 });
 
 export const aiAPI = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:5002",
 });
