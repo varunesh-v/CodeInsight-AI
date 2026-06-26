@@ -3,42 +3,78 @@ kind: Deployment
 metadata:
   name: user-service
   namespace: codeinsight
-
 spec:
   replicas: 1
-
   selector:
     matchLabels:
       app: user-service
-
   template:
     metadata:
       labels:
         app: user-service
-
     spec:
-
       imagePullSecrets:
         - name: ecr-secret
 
       containers:
         - name: user-service
-
           image: 888635225328.dkr.ecr.us-east-1.amazonaws.com/codeinsight-user-service:latest
+          imagePullPolicy: Always
 
           ports:
             - containerPort: 5000
+
+          env:
+            - name: DB_HOST
+              value: mysql-service
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_DATABASE
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+
+            # Change this if your JWT secret is different
+            - name: JWT_SECRET_KEY
+              value: "codeinsight_super_secret_key_12345678901234567890"
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: user-service
   namespace: codeinsight
-
 spec:
   selector:
     app: user-service
-
   ports:
-    - port: 5000
+    - protocol: TCP
+      port: 5000
       targetPort: 5000
+  type: ClusterIP
